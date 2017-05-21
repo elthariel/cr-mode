@@ -1,0 +1,197 @@
+;;; wisent-crystal.wy -- LALR grammar for Crystal
+;;
+;; Copyright (C) 2017 Julien 'Lta' BALLET
+;;
+;; Author: Julien 'Lta' BALLET <contact@lta.io>
+;; Created: May 2017 
+;; Keywords: syntax
+;;
+;; This file is not part of GNU Emacs.
+;;
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 2, or (at
+;; your option) any later version.
+;;
+;; This software is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING.  If not, write to the
+;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+;; Boston, MA 02110-1301, USA.
+
+;;; Commentary:
+;;
+;; This is an LALR crystal parser.
+;;
+;;; To do:
+;;
+;; * Add regexp literal
+;; * Write it :)
+
+;; --------
+;; Settings
+;; --------
+
+%{
+  (require 'cr-regexps)
+%}
+
+%package wisent-crystal-wy
+%provide crystal-wy
+
+%languagemode cr-mode
+
+;; The primary goal
+%start program
+
+;; ------------------
+;; Operator terminals
+;; ------------------
+
+;;define-lex-string-type-analyzer gets called with the "syntax" comment
+%type <punctuation> ;;syntax "lol" matchdatatype block
+
+%token <punctuation> AND        "&"
+%token <punctuation> ANDEQ      "&="
+%token <punctuation> ASSIGN     "="
+%token <punctuation> ACCESS     "::"
+%token <punctuation> ARROW      "->"
+%token <punctuation> AT         "@"
+%token <punctuation> CASEEQ     "==="
+%token <punctuation> COLON      ":"
+%token <punctuation> COMMA      ","
+%token <punctuation> DEC        "--"
+%token <punctuation> DIAMOND    "<=>"
+%token <punctuation> DIV        "/"
+%token <punctuation> DIVEQ      "/="
+%token <punctuation> DOT        "."
+%token <punctuation> EOL        "\n"
+%token <punctuation> EQ         "=="
+%token <punctuation> EXP        "**"
+%token <punctuation> EXPEQ      "**="
+%token <punctuation> GT         ">"
+%token <punctuation> GTEQ       ">="
+%token <punctuation> INC        "++"
+%token <punctuation> LOGAND     "&&"
+%token <punctuation> LOGANDEQ   "&&="
+%token <punctuation> LOGNOT     "!!"
+%token <punctuation> LOGOR      "||"
+%token <punctuation> LOGOREQ    "||="
+%token <punctuation> LSHIFT     "<<"
+%token <punctuation> LSHIFTEQ   "<<="
+%token <punctuation> LT         "<"
+%token <punctuation> LTEQ       "<="
+%token <punctuation> MIN        "-"
+%token <punctuation> MINEQ      "-="
+%token <punctuation> MOD        "%"
+%token <punctuation> MODEQ      "%="
+%token <punctuation> MULT       "*"
+%token <punctuation> MULTEQ     "*="
+%token <punctuation> NEQ        "!="
+%token <punctuation> NTILDE     "!~"
+%token <punctuation> OR         "|"
+%token <punctuation> OREQ       "|="
+%token <punctuation> PLUS       "+"
+%token <punctuation> PLUSEQ     "+="
+%token <punctuation> RANGE      ".."
+%token <punctuation> RANGE3     "..."
+%token <punctuation> RSHIFT     ">>"
+%token <punctuation> RSHIFTEQ   ">>="
+%token <punctuation> SEMICOLON  ";"
+%token <punctuation> TILDE      "~"
+%token <punctuation> TILDEEQ    "~="
+%token <punctuation> XOR        "^"
+%token <punctuation> XOREQ      "^="
+
+;; ------------------
+;; Keywords terminals
+;; ------------------
+
+%type  <keyword>
+%keyword CLASS "class"
+%keyword DEF "def"
+%keyword DO "do"
+%keyword ENUM "enum"
+%keyword LIB "lib"
+%keyword MACRO "macro"
+%keyword MODULE "module"
+%keyword STRUCT "struct"
+
+%keyword BEGIN "begin"
+%keyword BREAK "break"
+%keyword CASE "case"
+%keyword ELSE "else"
+%keyword ELSIF "elsif"
+%keyword ENSURE "ensure"
+%keyword FOR "for"
+%keyword IF "if"
+%keyword RESCUE "rescue"
+%keyword RETURN "return"
+%keyword WHEN "when"
+%keyword WHILE "while"
+%keyword UNTIL "until"
+%keyword UNLESS "unless"
+%keyword YIELD "yield"
+%keyword NEXT "next"
+
+%keyword END "end"
+
+%keyword ABSTRACT "abstract"
+%keyword EXTEND "extend"
+%keyword PRIVATE "private"
+%keyword PROTECTED "protected"
+%keyword PUBLIC "public"
+%keyword FUN "fun"
+%keyword INCLUDE "include"
+%keyword REQUIRE "require"
+%keyword OUT "out"
+%keyword OF "of"
+;; %keyword SELF "self"
+;; %keyword SUPER "super"
+%keyword UNINITIALIZED "uninitialized"
+
+;; -----------------
+;; Literal terminals
+;; -----------------
+
+;;the .y file uses VARIABLE as IDENTIFIER, which seems a bit evil
+;; it think the normal .wy convention is better than this
+%type  <symbol> syntax cr-symbol-regex matchdatatype regexp
+%token <symbol>      SYM
+
+%type <identifier> syntax cr-identifier-regex matchdatatype regexp
+%token <identifier> FALSE "false"
+%token <identifier> TRUE "true"
+%token <identifier> NIL "nil"
+%token <identifier>  ID
+
+%type <wordlist> syntax cr-wordlist-regex matchdatatype regexp
+%token <wordlist> WORDLIST
+
+%type <constant> syntax cr-constant-identifier-regex matchdatatype regexp
+%token <constant>    CID
+
+%type <global> syntax cr-global-identifier-regex matchdatatype regexp
+%token <global> GLOBAL
+
+%type <libattr> syntax cr-lib-attr-regex matchdatatype regexp
+%token <libattr> LIBATTR
+
+%type  <string>      ;;syntax "\\s\"" matchdatatype sexp
+%token <string>      STRING
+
+%type  <number>      ;;syntax semantic-lex-number-expression
+%token <number>      NUMBER
+
+%%
+
+;;;****************************************************************************
+;;;@ program
+;;;****************************************************************************
+
+program : stmts
+  ;
